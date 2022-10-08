@@ -8,14 +8,14 @@ export class UserService {
 
   async findUser(where: Prisma.UserWhereUniqueInput): Promise<User | null> {
     return this.prisma.user.findUnique({
-        where
-    })
+      where,
+    });
   }
 
   async findUsers(params: {
     skip: number;
     take: number;
-    where?: Prisma.UserWhereInput
+    where?: Prisma.UserWhereInput;
     orderBy?: Prisma.UserOrderByWithRelationInput;
   }): Promise<User[]> {
     const { skip, take, orderBy, where } = params;
@@ -23,7 +23,7 @@ export class UserService {
       skip,
       take,
       orderBy,
-      where
+      where,
     });
   }
 
