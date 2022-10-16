@@ -1,0 +1,1 @@
+export type Wallet = {privateKey: string, publicKey: string, seedPhrase: string}
