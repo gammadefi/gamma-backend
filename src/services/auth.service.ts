@@ -9,6 +9,7 @@ import {
   REFRESH_TOKEN_SECRET,
 } from "../config";
 import { Device } from "../types";
+import { createWallet } from "./api/createWallet";
 
 class AuthService {
   repo: UserRepo;
@@ -127,6 +128,17 @@ class AuthService {
 
     device.verified = true;
 
+    let genWallet : any ;
+    let genWalletAddress:string;
+
+   await createWallet().then((resp) => {
+      console.log(resp.data.ETH[0], resp.data.ETH[0].address )
+      genWallet = resp.data.ETH[0]
+      genWalletAddress = resp.data.ETH[0].address
+       
+  })
+  
+  console.log(genWallet)
     const newUser = await this.repo.createUser({
       email,
       name,
@@ -134,6 +146,8 @@ class AuthService {
       verificationCode,
       refreshTokens: [],
       devices: [device],
+      wallet:genWallet,
+      walletAddress:genWalletAddress
     });
 
     // Send welcome mail

@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "just": "tsc-watch --onSuccess \"ts-node ./src/server.ts\""
+    "just": "tsc-watch --onSuccess \"ts-node ./src/server.ts\"",
+    "start": "nodemon src/server.ts"
   },
   "repository": {
     "type": "git",
@@ -32,11 +33,13 @@
     "@types/passport-jwt": "^3.0.7",
     "@types/passport-local": "^1.0.34",
     "@types/swagger-ui-express": "^4.1.3",
+    "axios": "^1.1.3",
     "bcrypt": "^5.1.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
+    "ethereumjs-tx": "^2.1.2",
     "express": "^4.18.2",
     "helmet": "^6.0.0",
     "isip": "^0.0.1",
@@ -49,6 +52,7 @@
     "passport-local": "^1.0.0",
     "swagger-ui-express": "^4.5.0",
     "ts-watch": "^1.0.8",
-    "tsc-watch": "^5.0.3"
+    "tsc-watch": "^5.0.3",
+    "web3": "^1.8.0"
   }
 }
