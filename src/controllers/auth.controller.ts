@@ -9,11 +9,11 @@ class AuthController {
     this.service = new AuthService();
   }
 
-  public async initReg(
+  initReg = async(
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<Response> {
+  ): Promise<Response> => {
     try {
       const { email } = req.body;
 
@@ -27,11 +27,11 @@ class AuthController {
     }
   }
 
-  public async register(
+  register = async(
     req: IPRequest,
     res: Response,
     next: NextFunction
-  ): Promise<Response> {
+  ): Promise<Response> => {
     try {
       const { email, name, password, verificationCode } = req.body;
 
@@ -48,11 +48,11 @@ class AuthController {
     }
   }
 
-  public async login(
+  login = async (
     req: IPRequest,
     res: Response,
     next: NextFunction
-  ): Promise<Response> {
+  ): Promise<Response> => {
     try {
       const { email, password } = req.body;
 
@@ -79,11 +79,11 @@ class AuthController {
     }
   }
 
-  public async verifyDevice(
+  verifyDevice = async (
     req: IPRequest,
     res: Response,
     next: NextFunction
-  ): Promise<Response> {
+  ): Promise<Response> => {
     try {
       const { email, verificationCode } = req.body;
 

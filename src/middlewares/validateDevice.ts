@@ -6,17 +6,21 @@ import isIp from "isip";
 export default (): RequestHandler => {
   return (req: IPRequest, res: Response, next: NextFunction) => {
     try {
-      const { deviceName, deviceIp } = req.headers;
+      const { devicename, deviceip } = req.headers;
 
-      if (!deviceName || !deviceIp)
+      if (!devicename || !deviceip)
         throw new UnauthorizedError(
           `Device details not passed in request headers!`
         );
 
-      if (!isIp(deviceIp as string))
+      if (!isIp(deviceip as string))
         throw new UnauthorizedError(`Invalid Ip address`);
 
-      req.device = { name: deviceName as string, ip: deviceIp as string, verified: false };
+      req.device = {
+        name: devicename as string,
+        ip: deviceip as string,
+        verified: false,
+      };
 
       next();
     } catch (err) {

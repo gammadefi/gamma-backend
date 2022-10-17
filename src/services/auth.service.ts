@@ -21,7 +21,7 @@ class AuthService {
 
   // Helper method to strip user object of sensitive info
   public stripUser(user: IUser): any {
-    const { password, refreshTokens, devices, ...restOfUser } = user;
+    const { password, refreshTokens, devices, ...restOfUser } = (user as any)._doc;
     return restOfUser;
   }
 

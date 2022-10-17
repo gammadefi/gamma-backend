@@ -4,13 +4,13 @@ import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
-import { authRouter } from "./routes";
+import { authRouter, userRouter } from "./routes";
 import { errHandler } from "./exceptions";
 
 
 export default async (app: Application) => {
   // Log to console using morgan if app is in development
-  if (process.env.ENV === "dev") app.use(morgan("development"));
+  if (process.env.ENV === "development") app.use(morgan("dev"));
 
   // CORS
   app.use(cors());
@@ -25,6 +25,7 @@ export default async (app: Application) => {
 
   // Application Routes
   app.use("/auth", authRouter);
+  app.use("/users", userRouter)
 
   // Catch and handle all 404 errors
   app.all("*", function (req: Request, res: Response): Response {

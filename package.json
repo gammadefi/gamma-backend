@@ -4,7 +4,8 @@
   "description": "Backend for the gamma project",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "just": "tsc-watch --onSuccess \"ts-node ./src/server.ts\""
   },
   "repository": {
     "type": "git",
@@ -46,6 +47,8 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
-    "swagger-ui-express": "^4.5.0"
+    "swagger-ui-express": "^4.5.0",
+    "ts-watch": "^1.0.8",
+    "tsc-watch": "^5.0.3"
   }
 }

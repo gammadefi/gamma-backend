@@ -16,6 +16,11 @@ export default (schema: Schema): RequestHandler => {
 
       next();
     } catch (err: any) {
+      console.log(err);
+      const errMessages: string[] = [];
+      err.details.map((e: any) => errMessages.push(e.message));
+      err.statusCode = 409;
+      err.message = errMessages.join(",");
       next(err);
     }
   };

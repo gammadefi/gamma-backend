@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.post("/init", validateReqBody(initRegSchema), authController.initReg);
 
-router.use(validateDevice);
+router.use(validateDevice());
 
 router.post("/register", validateReqBody(registerSchema), authController.register);
 router.post("/login", validateReqBody(loginSchema), authController.login);
