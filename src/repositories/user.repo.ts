@@ -42,6 +42,10 @@ class UserRepo {
     public async deleteMany(filter: object): Promise<void> {
         await UserModel.deleteMany(filter)
     }
+
+    public async createUser(data: IUser): Promise<IUser> {
+        return await UserModel.create(data);
+    }
 }
 
 export default UserRepo

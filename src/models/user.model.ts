@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IUser } from "../interfaces";
+import bcrypt from "bcrypt"
 
 const userSchema = new Schema<IUser>(
   {
@@ -18,7 +19,8 @@ const userSchema = new Schema<IUser>(
     },
     walletAddress: {
       type: String,
-      // unique: true
+      unique: true,
+      sparse: true
     },
     assets: [
       {
@@ -30,10 +32,23 @@ const userSchema = new Schema<IUser>(
         type: Schema.Types.Mixed,
       },
     ],
-    verificationCode: String
+    verificationCode: String,
+    refreshTokens: [String],
+    devices: [Schema.Types.Mixed]
   },
   { timestamps: true }
 );
+
+userSchema.pre('save', async function(next) {
+  const hash = await bcrypt.hash(this.password, 10);
+  this.password = hash;
+  next();
+})
+
+userSchema.methods.comparePassword = async function(password: string): Promise<boolean> {
+  const correct = await bcrypt.compare(password, this.password);
+  return correct;
+}
 
 const UserModel = model<IUser>("User", userSchema);
 

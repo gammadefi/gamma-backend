@@ -22,6 +22,10 @@ class PendingUserRepo {
     public async delete(email: string): Promise<void> {
         await PendingUserModel.deleteOne({email});
     }
+
+    public async create(email: string, verificationCode: string): Promise<IPendingUser> {
+        return await PendingUserModel.create({email, verificationCode});
+    }
 }
 
-export default PendingUserRepo
+export default PendingUserRepo;

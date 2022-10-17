@@ -1,4 +1,4 @@
-import {Wallet} from '../types'
+import {Wallet, Device} from '../types'
 
 export interface IUser {
     email: string;
@@ -6,6 +6,9 @@ export interface IUser {
     password: string;
     walletAddress?: string;
     assets?: string[];
-    wallet: Wallet[];
-    verificationCode?: number;
+    wallet?: Wallet[];
+    verificationCode?: string;
+    devices?: Device[];
+    refreshTokens: string[];
+    _id?: string
 }
