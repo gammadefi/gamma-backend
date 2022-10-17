@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 import { TokenData } from "../types";
-import jwt from 'jsonwebtoken'
+import jwt from "jsonwebtoken";
 import Web3 from "web3";
-import BigNumber from "bignumber"
-import TX from 'ethereumjs-tx'
-import crypto from 'crypto'
-import qs from 'qs'
+import BigNumber from "bignumber";
+import TX from "ethereumjs-tx";
+import crypto from "crypto";
+import qs from "qs";
+
+const web3 = new Web3("https://mainnet.infura.io/v3/your-project-id");
 
 export const connectToDB = async (DB: string) => {
   mongoose
@@ -16,23 +18,26 @@ export const connectToDB = async (DB: string) => {
     );
 };
 
-export const signJWT = (data: TokenData, secret: string, expiry: string): string => {
+export const signJWT = (
+  data: TokenData,
+  secret: string,
+  expiry: string
+): string => {
   const token = jwt.sign(data, secret, {
-    expiresIn: expiry
-  })
+    expiresIn: expiry,
+  });
   return token;
-}
+};
 
 export const createVerificationCode = (n: number): string => {
-  let code = ''
+  let code = "";
 
   for (let i = 0; i <= n; i++) code += crypto.randomInt(0, 9);
 
-  return code
-}
+  return code;
+};
 
-
-const contractAbi:any = [
+const contractAbi: any = [
   // balanceOf
   {
     constant: true,
@@ -40,64 +45,108 @@ const contractAbi:any = [
     name: "balanceOf",
     outputs: [{ name: "balance", type: "uint256" }],
     type: "function",
-  }
+  },
 ];
 
+export const transferAsset = async (data: object) => {
+  web3.eth.accounts.wallet.add("privateKey of fromwallet");
 
-export const transferAsset = async(data:object) => {
-  const web3 = new Web3('https://mainnet.infura.io/v3/your-project-id')
-  web3.eth.accounts.wallet.add('privateKey of fromwallet');
-  
-  var tokenAddress = ''//Tether token(USDT)
-  var fromAddress = '0x3df...'
-  var tokenInst = new web3.eth.Contract(contractAbi,tokenAddress);
-  tokenInst.methods.transfer("receiver address"," amounts").send({from: fromAddress, gas: 100000},function (error, result){ //get callback from function which is your transaction key
-      if(!error){
-          console.log(result);
-         //// handleSuccessTrue();
-      } else{
-          console.log(error);
-          web3.eth.getBalance(fromAddress, (err,bal) => { alert('Your account has ' + web3.utils.fromWei(bal, 'ether') + ', Insufficient funds for gas * price + value on your wallet')});
-         // handleSuccessFalse();
+  var tokenAddress = ""; //Tether token(USDT)
+  var fromAddress = "0x3df...";
+  var tokenInst = new web3.eth.Contract(contractAbi, tokenAddress);
+  tokenInst.methods
+    .transfer("receiver address", " amounts")
+    .send({ from: fromAddress, gas: 100000 }, function (error, result) {
+      //get callback from function which is your transaction key
+      if (!error) {
+        console.log(result);
+        //// handleSuccessTrue();
+      } else {
+        console.log(error);
+        web3.eth.getBalance(fromAddress, (err, bal) => {
+          alert(
+            "Your account has " +
+              web3.utils.fromWei(bal, "ether") +
+              ", Insufficient funds for gas * price + value on your wallet"
+          );
+        });
+        // handleSuccessFalse();
       }
-  });
+    });
   //Finally, you can check if usdt tranaction success through this code.
-  tokenInst.methods.balanceOf("receiver addrerss").call().then(console.log)
-  .catch(console.error);
-
-}
+  tokenInst.methods
+    .balanceOf("receiver addrerss")
+    .call()
+    .then(console.log)
+    .catch(console.error);
+};
 
 export const tokenSwap = async () => {
-  const web3 = new Web3('https://mainnet.infura.io/v3/your-project-id')
-  web3.eth.accounts.wallet.add('privateKey of fromwallet');
-  const ZERO_EX_ADDRESS = '0xdef1c0ded9bec7f1a1670819833240f027b25eff';
-  const DAI_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-  
+  web3.eth.accounts.wallet.add("privateKey of fromwallet");
+  const ZERO_EX_ADDRESS = "0xdef1c0ded9bec7f1a1670819833240f027b25eff";
+  const DAI_ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+
   // Selling 100 DAI for ETH.
   const params = {
-      sellToken: 'DAI',
-      buyToken: 'ETH',
-      // Note that the DAI token uses 18 decimal places, so `sellAmount` is `100 * 10^18`.    
-      sellAmount: '100000000000000000000',
-      takerAddress: '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B',
-  }
-  
+    sellToken: "DAI",
+    buyToken: "ETH",
+    // Note that the DAI token uses 18 decimal places, so `sellAmount` is `100 * 10^18`.
+    sellAmount: "100000000000000000000",
+    takerAddress: "0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B",
+  };
+
   // Set up a DAI allowance on the 0x contract if needed.
   const dai = new web3.eth.Contract(contractAbi, DAI_ADDRESS);
   const currentAllowance = new BigNumber(
-      dai.methods.allowance(params.takerAddress, ZERO_EX_ADDRESS).call()
+    dai.methods.allowance(params.takerAddress, ZERO_EX_ADDRESS).call()
   );
   if (currentAllowance.isLessThan(params.sellAmount)) {
-      await dai.methods
-          .approve(ZERO_EX_ADDRESS, params.sellAmount)
-          .send({ from: params.takerAddress });
+    await dai.methods
+      .approve(ZERO_EX_ADDRESS, params.sellAmount)
+      .send({ from: params.takerAddress });
   }
-  
+
   // Fetch the swap quote.
   const response = await fetch(
-      `https://api.0x.org/swap/v1/quote?${qs.stringify(params)}`
+    `https://api.0x.org/swap/v1/quote?${qs.stringify(params)}`
   );
-  
+
   // Perform the swap.
   await web3.eth.sendTransaction(await response.json());
-}
+};
+
+export const sendNativeCoin = async () => {
+  const nonce = await web3.eth.getTransactionCount("userAdress", "latest"); // nonce starts counting from 0
+
+  const transaction = {
+    to: "0x31B98D14007bDEe637298086988A0bBd31184523", // faucet address to return eth
+    value: web3.utils.toWei('0.0001', "ether"),
+    gas: 30000,
+    maxFeePerGas: 1000000108,
+    nonce: nonce,
+    // optional data field to send message or execute smart contract
+  };
+
+  const signedTx = await web3.eth.accounts.signTransaction(
+    transaction,
+    "PRIVATE_KEY"
+  );
+
+  web3.eth.sendSignedTransaction(
+    signedTx.rawTransaction,
+    function (error, hash) {
+      if (!error) {
+        console.log(
+          "🎉 The hash of your transaction is: ",
+          hash,
+          "\n Check Alchemy's Mempool to view the status of your transaction!"
+        );
+      } else {
+        console.log(
+          "❗Something went wrong while submitting your transaction:",
+          error
+        );
+      }
+    }
+  );
+};
