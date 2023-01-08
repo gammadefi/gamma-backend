@@ -1,6 +1,7 @@
 import { AuthService } from "../services";
-import { Request, Response, NextFunction } from "express";
-import { IPRequest } from "../types";
+import { Request, Response, NextFunction, RequestHandler } from "express";
+import { IPRequest, ProtectedRequest } from "../types";
+import { BadRequestError } from "src/exceptions";
 
 class AuthController {
   service: AuthService;
@@ -9,7 +10,7 @@ class AuthController {
     this.service = new AuthService();
   }
 
-  initReg = async(
+  initReg = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -25,19 +26,33 @@ class AuthController {
     } catch (err) {
       next(err);
     }
-  }
+  };
 
-  register = async(
+  register = async (
     req: IPRequest,
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
     try {
-      const { email, name, password, verificationCode } = req.body;
-
+      const {
+        email,
+        firstName,
+        lastName,
+        dob,
+        title,
+        gender,
+        phone,
+        password,
+        verificationCode,
+      } = req.body;
       const user = await this.service.signUp(
         email,
-        name,
+        firstName,
+        lastName,
+        dob,
+        title,
+        gender,
+        phone,
         password,
         verificationCode,
         req.device
@@ -46,7 +61,7 @@ class AuthController {
     } catch (err) {
       next(err);
     }
-  }
+  };
 
   login = async (
     req: IPRequest,
@@ -77,7 +92,7 @@ class AuthController {
     } catch (err: any) {
       next(err);
     }
-  }
+  };
 
   verifyDevice = async (
     req: IPRequest,
@@ -103,7 +118,62 @@ class AuthController {
     } catch (err: any) {
       next(err);
     }
-  }
+  };
+
+  sendCode = async (
+      req: ProtectedRequest,
+      res: Response,
+      next: NextFunction
+    ): Promise<Response> => {
+      try {
+        let value: string;
+
+        const channel = req.params.channel;
+
+        if (channel === "phone") value = req.user.phone;
+        else if (channel === "email") value = req.user.email;
+        else throw new BadRequestError(`Invalid channel type passed in request parameters!`)
+
+        await this.service.sendCode(channel as "phone" | "email", value);
+        return res.status(200).json({ status: "success" });
+      } catch (err: any) {
+        next(err);
+      }
+  };
+
+  updatePhoneOrMail = (channel: "phone" | "email"): RequestHandler => {
+    return async (
+      req: ProtectedRequest,
+      res: Response,
+      next: NextFunction
+    ): Promise<Response> => {
+      try {
+        const { value } = req.body;
+        await this.service.updatePhoneOrEmail(channel, value, req.user._id);
+        return res.status(200).json({ status: "success" });
+      } catch (err: any) {
+        next(err);
+      }
+    };
+  };
+
+  verifyPhoneOrMail = (
+    channel: "phone" | "email"
+  ): RequestHandler => {
+    return async (
+      req: ProtectedRequest,
+      res: Response,
+      next: NextFunction
+    ): Promise<Response> => {
+      try {
+        const {value, verificationCode} = req.body;
+        const updatedUser = await this.service.verifyPhoneOrMail(channel, verificationCode, value);
+        return res.status(200).json({status: "success", data: updatedUser});
+      } catch (err: any) {
+        next(err);
+      }
+    };
+  };
 }
 
 export default AuthController;

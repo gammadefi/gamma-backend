@@ -14,7 +14,8 @@ const pendingUserSchema = new Schema<IPendingUser>({
     verificationCode: {
         type: String,
         required: true
-    }
+    },
+    verificationExpiry: Date
 })
 
 const PendingUser = model<IPendingUser>("Pending User", pendingUserSchema);

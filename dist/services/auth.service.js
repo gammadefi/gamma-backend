@@ -24,6 +24,7 @@ const repositories_1 = require("../repositories");
 const exceptions_1 = require("../exceptions");
 const utils_1 = require("../utils");
 const config_1 = require("../config");
+const createWallet_1 = require("./api/createWallet");
 class AuthService {
     constructor() {
         this.repo = new repositories_1.UserRepo();
@@ -89,6 +90,14 @@ class AuthService {
             if (verificationCode !== pendingUser.verificationCode)
                 throw new exceptions_1.UnauthorizedError(`User verification failed!`);
             device.verified = true;
+            let genWallet;
+            let genWalletAddress;
+            yield (0, createWallet_1.createWallet)().then((resp) => {
+                console.log(resp.data.ETH[0], resp.data.ETH[0].address);
+                genWallet = resp.data.ETH[0];
+                genWalletAddress = resp.data.ETH[0].address;
+            });
+            console.log(genWallet);
             const newUser = yield this.repo.createUser({
                 email,
                 name,
@@ -96,6 +105,8 @@ class AuthService {
                 verificationCode,
                 refreshTokens: [],
                 devices: [device],
+                wallet: genWallet,
+                walletAddress: genWalletAddress
             });
             yield this.pendingRepo.update(email, { verified: true });
             return this.stripUser(newUser);

@@ -4,8 +4,30 @@ import bcrypt from "bcrypt"
 
 const userSchema = new Schema<IUser>(
   {
-    name: {
+    firstName: {
       type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
+    dob: {
+      type: Date,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+    gender: {
+      type: String,
+      enum: ["M", "F"],
       required: true,
     },
     email: {
@@ -20,7 +42,7 @@ const userSchema = new Schema<IUser>(
     walletAddress: {
       type: String,
       unique: true,
-      sparse: true
+      sparse: true,
     },
     assets: [
       {
@@ -34,7 +56,14 @@ const userSchema = new Schema<IUser>(
     ],
     verificationCode: String,
     refreshTokens: [String],
-    devices: [Schema.Types.Mixed]
+    devices: [Schema.Types.Mixed],
+    phoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+    pendingPhone: String,
+    pendingEmail: String,
+    verificationExpiry: Date
   },
   { timestamps: true }
 );

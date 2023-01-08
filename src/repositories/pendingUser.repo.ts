@@ -28,9 +28,10 @@ class PendingUserRepo {
 
   public async create(
     email: string,
-    verificationCode: string
+    verificationCode: string,
+    verificationExpiry: Date
   ): Promise<IPendingUser> {
-    return await PendingUserModel.create({ email, verificationCode });
+    return await PendingUserModel.create({ email, verificationCode, verificationExpiry });
   }
 }
 

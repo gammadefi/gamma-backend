@@ -6,9 +6,14 @@ export const initRegSchema = Joi.object({
 
 export const registerSchema = Joi.object({
   email: Joi.string().required(),
-  name: Joi.string().required(),
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
+  dob: Joi.date().required(),
+  title: Joi.string().required(),
+  gender: Joi.string().valid("M", "F").required(),
+  phone: Joi.string().required(),
   password: Joi.string().required(),
-  verificationCode: Joi.string().required(),
+  verificationCode: Joi.string().disallow("").required(),
 });
 
 export const loginSchema = Joi.object({
@@ -18,5 +23,14 @@ export const loginSchema = Joi.object({
 
 export const verifyDeviceSchema = Joi.object({
   email: Joi.string().required(),
-  verificationCode: Joi.string().required(),
+  verificationCode: Joi.string().disallow("").required(),
+});
+
+export const updateEmailorPhoneSchema = Joi.object({
+  value: Joi.string().required()
+});
+
+export const verifyPhoneOrMailSchema = Joi.object({
+  value: Joi.string().required(),
+  verificationCode: Joi.string().disallow("").required(),
 });

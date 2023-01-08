@@ -5,7 +5,10 @@ import Web3 from "web3";
 import BigNumber from "bignumber";
 import TX from "ethereumjs-tx";
 import crypto from "crypto";
+import {ABI} from './ABI'
 import qs from "qs";
+import {ZERO_EX_ADDRESS} from '../config'
+import moment from 'moment';
 
 const web3 = new Web3("https://mainnet.infura.io/v3/your-project-id");
 
@@ -29,12 +32,14 @@ export const signJWT = (
   return token;
 };
 
-export const createVerificationCode = (n: number): string => {
+export const createVerificationCode = (n: number, expiryTimeInMinutes: number): {verificationCode: string, expiryTimeInMinutes: Date} => {
   let code = "";
+  const expiryTime = moment().add(expiryTimeInMinutes, 'minutes').toDate()
+  
 
   for (let i = 0; i <= n; i++) code += crypto.randomInt(0, 9);
 
-  return code;
+  return {verificationCode: code, expiryTimeInMinutes: expiryTime};
 };
 
 const contractAbi: any = [
@@ -81,27 +86,33 @@ export const transferAsset = async (data: object) => {
     .catch(console.error);
 };
 
-export const tokenSwap = async () => {
-  web3.eth.accounts.wallet.add("privateKey of fromwallet");
-  const ZERO_EX_ADDRESS = "0xdef1c0ded9bec7f1a1670819833240f027b25eff";
-  const DAI_ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+export const tokenSwap = async (
+  privateKey: string,
+  token: {address: string, decimal: number},
+  sellToken: string,
+  buyToken: string,
+  amount: number,
+  myAddress: string
+) => {
+  web3.eth.accounts.wallet.add(privateKey);
+  // const DAI_ADDRESS = tokenAddress;
 
   // Selling 100 DAI for ETH.
   const params = {
-    sellToken: "DAI",
-    buyToken: "ETH",
+    sellToken,
+    buyToken,
     // Note that the DAI token uses 18 decimal places, so `sellAmount` is `100 * 10^18`.
-    sellAmount: "100000000000000000000",
-    takerAddress: "0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B",
+    sellAmount: String(amount * (10 ** token.decimal)),
+    takerAddress: myAddress,
   };
 
   // Set up a DAI allowance on the 0x contract if needed.
-  const dai = new web3.eth.Contract(contractAbi, DAI_ADDRESS);
+  const tokenName = new web3.eth.Contract(ABI, token.address);
   const currentAllowance = new BigNumber(
-    dai.methods.allowance(params.takerAddress, ZERO_EX_ADDRESS).call()
+    tokenName.methods.allowance(params.takerAddress, ZERO_EX_ADDRESS).call()
   );
   if (currentAllowance.isLessThan(params.sellAmount)) {
-    await dai.methods
+    await tokenName.methods
       .approve(ZERO_EX_ADDRESS, params.sellAmount)
       .send({ from: params.takerAddress });
   }
@@ -112,7 +123,8 @@ export const tokenSwap = async () => {
   );
 
   // Perform the swap.
-  await web3.eth.sendTransaction(await response.json());
+  const res = await web3.eth.sendTransaction(await response.json());
+  console.log(res);
 };
 
 export const sendNativeCoin = async () => {
