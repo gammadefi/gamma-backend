@@ -1,7 +1,7 @@
 import { AuthService } from "../services";
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { IPRequest, ProtectedRequest } from "../types";
-import { BadRequestError } from "src/exceptions";
+import { BadRequestError } from "../exceptions";
 
 class AuthController {
   service: AuthService;

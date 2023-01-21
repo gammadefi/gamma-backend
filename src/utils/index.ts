@@ -9,8 +9,9 @@ import {ABI} from './ABI'
 import qs from "qs";
 import {ZERO_EX_ADDRESS} from '../config'
 import moment from 'moment';
+import { TransferNativeITF } from "../interfaces/wallet.interface";
 
-const web3 = new Web3("https://mainnet.infura.io/v3/your-project-id");
+const web3 = new Web3("https://rpc-mumbai.matic.today");
 
 export const connectToDB = async (DB: string) => {
   mongoose
@@ -53,37 +54,61 @@ const contractAbi: any = [
   },
 ];
 
-export const transferAsset = async (data: object) => {
-  web3.eth.accounts.wallet.add("privateKey of fromwallet");
+export const transferAsset = async () => {
+  web3.eth.accounts.wallet.add("84e4653e5b1147b57d6ff86a5d0d02f1b3efe629640e5d7c3502f32e63b7e35d");
+  const privateKey = "84e4653e5b1147b57d6ff86a5d0d02f1b3efe629640e5d7c3502f32e63b7e35d"
+  var tokenAddress = "0x0eba3661D65Ee65A695aF944875c900ea853411f"; //Tether token(USDT)
+  var fromAddress = "0x4Ea1A7A0f05C66Bf7eaa2140445419b1FF775586";
+ 
+  let contract = new web3.eth.Contract(ABI, tokenAddress, {from: fromAddress})
+  let amount = web3.utils.toHex(10e18)
 
-  var tokenAddress = ""; //Tether token(USDT)
-  var fromAddress = "0x3df...";
-  var tokenInst = new web3.eth.Contract(contractAbi, tokenAddress);
-  tokenInst.methods
-    .transfer("receiver address", " amounts")
-    .send({ from: fromAddress, gas: 100000 }, function (error, result) {
-      //get callback from function which is your transaction key
-      if (!error) {
-        console.log(result);
-        //// handleSuccessTrue();
-      } else {
-        console.log(error);
-        web3.eth.getBalance(fromAddress, (err, bal) => {
-          alert(
-            "Your account has " +
-              web3.utils.fromWei(bal, "ether") +
-              ", Insufficient funds for gas * price + value on your wallet"
+  const nonce = await web3.eth.getTransactionCount(fromAddress, "latest");
+
+    let rawTransaction = {
+      'from': fromAddress,
+      'gasPrice': web3.utils.toHex(20 * 1e9),
+      'gasLimit': web3.utils.toHex(210000),
+      'to': tokenAddress,
+      'value': 0x0,
+      'data': contract.methods.transfer('0x0D63663dEF0c2AbDb87a42C56D442f7A4bf419A8', amount).encodeABI(),
+      'nonce':nonce
+    }
+    const signedTx = await web3.eth.accounts.signTransaction(
+      rawTransaction,
+      privateKey
+    );
+
+    web3.eth.sendSignedTransaction(
+      signedTx.rawTransaction,
+      function (error, hash) {
+        if (!error) {
+          console.log(
+            "🎉 The hash of your transaction is: ",
+            hash,
+            "\n Check Alchemy's Mempool to view the status of your transaction!"
           );
-        });
-        // handleSuccessFalse();
+          return {
+            code:"success",
+            message:"transaction successfull"
+          }
+        } else {
+          console.log(
+            "❗Something went wrong while submitting your transaction:",
+            error
+          );
+  
+          return {
+            code:"failed",
+            message:"❗Something went wrong while submitting your transaction"
+          }
+        }
       }
-    });
-  //Finally, you can check if usdt tranaction success through this code.
-  tokenInst.methods
-    .balanceOf("receiver addrerss")
-    .call()
-    .then(console.log)
-    .catch(console.error);
+    );
+   
+   
+ 
+
 };
 
 export const tokenSwap = async (
@@ -127,37 +152,63 @@ export const tokenSwap = async (
   console.log(res);
 };
 
-export const sendNativeCoin = async () => {
-  const nonce = await web3.eth.getTransactionCount("userAdress", "latest"); // nonce starts counting from 0
+export const sendNativeCoin = async ({privateKey, toAddress, fromAddress, amount}: TransferNativeITF) => {
+  try {
+    var balance = await web3.eth.getBalance(fromAddress); //Will give value in.
+    console.log(web3.utils.toDecimal(balance));
+    
+  } catch (error) {
+    console.log(error);
+    
+  }
+ 
+  
+  
+  
+  const nonce = await web3.eth.getTransactionCount(fromAddress, "latest"); // nonce starts counting from 0
 
+  console.log(nonce);
+  
   const transaction = {
-    to: "0x31B98D14007bDEe637298086988A0bBd31184523", // faucet address to return eth
-    value: web3.utils.toWei('0.0001', "ether"),
+    to: "0x4Ea1A7A0f05C66Bf7eaa2140445419b1FF775586", // faucet address to return eth
+    value: web3.utils.toWei(amount.toString(), "ether"),
     gas: 30000,
-    maxFeePerGas: 1000000108,
     nonce: nonce,
     // optional data field to send message or execute smart contract
   };
 
   const signedTx = await web3.eth.accounts.signTransaction(
     transaction,
-    "PRIVATE_KEY"
+    privateKey
   );
+
+  console.log(signedTx);
+  
 
   web3.eth.sendSignedTransaction(
     signedTx.rawTransaction,
     function (error, hash) {
       if (!error) {
-        console.log(
-          "🎉 The hash of your transaction is: ",
-          hash,
-          "\n Check Alchemy's Mempool to view the status of your transaction!"
-        );
+        // console.log(
+        //   "🎉 The hash of your transaction is: ",
+        //   hash,
+        //   "\n Check Alchemy's Mempool to view the status of your transaction!"
+        // );
+        return {
+          status:"success",
+          message:"transaction successfull",
+          hash
+        }
       } else {
-        console.log(
-          "❗Something went wrong while submitting your transaction:",
-          error
-        );
+        // console.log(
+        //   "❗Something went wrong while submitting your transaction:",
+        //   error
+        // );
+
+        return {
+          status:"failed",
+          message:"❗Something went wrong while submitting your transaction"
+        }
       }
     }
   );

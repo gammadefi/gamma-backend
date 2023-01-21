@@ -6,6 +6,7 @@ import {
 
 import flutterSDK from "flutterwave-node-v3";
 import axios from "axios";
+import { creatVCardITf } from "../interfaces/card.interface";
 
 const client = new flutterSDK(FLUTTERWAVE_PUBLIC_KEY, FLUTTERWAVE_SECRET_KEY);
 
@@ -77,15 +78,15 @@ export const validateCharge = async (trxRef: string, otp: string) => {
 }
 
 export const createVirtualCard = async (
-  currency: string,
-  amount: number,
-  firstName: string,
-  lastName: string,
-  dob: string,
-  email: string,
-  phone: string,
-  title: string,
-  gender: string
+  {currency,
+  amount,
+  firstName,
+  lastName,
+  dob,
+  email,
+  phone,
+  title,
+  gender }: creatVCardITf
 ) => {
   try {
     const data = {
@@ -120,6 +121,8 @@ export const createVirtualCard = async (
     //     }
     // })
 
+    return res
+
     // console.log(res.data)
   } catch (err: any) {
     console.log(err.response.data);
@@ -148,7 +151,7 @@ export const getAllVirtualCards = async () => {
 };
 
 // getAllVirtualCards();
-createVirtualCard("USD", 10, "Panam", "Hebron", "2002/05/03", "panampraisehebron@gmail.com", "08056834458", "MR", "M");
+// createVirtualCard("USD", 10, "Panam", "Hebron", "2002/05/03", "panampraisehebron@gmail.com", "08056834458", "MR", "M");
 // chargeCard(
 //   100,
 //   "5258585922666506",
