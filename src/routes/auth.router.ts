@@ -7,6 +7,7 @@ import {
   verifyDeviceSchema,
   updateEmailorPhoneSchema,
   verifyPhoneOrMailSchema,
+  registerAdminSchema
 } from "../validations";
 import { AuthController } from "../controllers";
 
@@ -16,15 +17,27 @@ const router = express.Router();
 
 router.post("/init", validateReqBody(initRegSchema), authController.initReg);
 
+router.post("/admin/register", validateReqBody(registerAdminSchema), authController.registerAdmin)
+
 router.use(validateDevice());
 
+
 router.post("/register", validateReqBody(registerSchema), authController.register);
-router.post("/login", validateReqBody(loginSchema), authController.login);
-router.post("/device/verify", validateReqBody(verifyDeviceSchema), authController.verifyDevice);
+
+router.post("/login", validateReqBody(loginSchema), authController.login("user"));
+router.post("/admin/login", validateReqBody(loginSchema), authController.login("admin"))
+
+router.post("/device/verify", validateReqBody(verifyDeviceSchema), authController.verifyDevice("user"));
+router.post("/admin/device/verify", validateReqBody(verifyDeviceSchema), authController.verifyDevice("admin"))
+
+
 
 router.use(validateJwt());
 
-router.post("/sendcode/:channel", authController.sendCode);
+
+router.post("/sendcode/:channel", authController.sendCode("user"));
+router.post("/admin/sendcode/:channel", authController.sendCode("admin"));
+
 router.patch(
   "/me/email",
   validateReqBody(updateEmailorPhoneSchema),

@@ -27,8 +27,8 @@ class UserRepo {
   }
 
   public async update(id: string, fields: object): Promise<IUser> {
-    await UserModel.findByIdAndUpdate(id, fields);
-    const user = await this.getById(id);
+    const user = await UserModel.findByIdAndUpdate(id, fields, {returnDocument: 'after'});
+    // const user = await this.getById(id);
     return user;
   }
 

@@ -1,7 +1,7 @@
 import { AuthService } from "../services";
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { IPRequest, ProtectedRequest } from "../types";
-import { BadRequestError } from "src/exceptions";
+import { BadRequestError } from "../exceptions";
 
 class AuthController {
   service: AuthService;
@@ -19,14 +19,24 @@ class AuthController {
       const { email } = req.body;
 
       const verificationCode = await this.service.initializeSignUp(email);
-
+      
       return res
         .status(200)
         .json({ status: "success", data: verificationCode });
-    } catch (err) {
+      } catch (err) {
+        next(err);
+      }
+    };
+    
+  registerAdmin = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+    try {
+      const data = await this.service.signupAdmin(req.body.email, req.body.password);
+      return res.status(200).json({status: "success", data})
+    } catch(err: any) {
       next(err);
     }
-  };
+  }
+
 
   register = async (
     req: IPRequest,
@@ -41,7 +51,7 @@ class AuthController {
         dob,
         title,
         gender,
-        phone,
+        // phone,
         password,
         verificationCode,
       } = req.body;
@@ -52,7 +62,7 @@ class AuthController {
         dob,
         title,
         gender,
-        phone,
+        // phone,
         password,
         verificationCode,
         req.device
@@ -63,82 +73,102 @@ class AuthController {
     }
   };
 
-  login = async (
-    req: IPRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response> => {
-    try {
-      const { email, password } = req.body;
+  login = (resourceType: "admin" | "user"): RequestHandler => {
+    return async (
+      req: IPRequest,
+      res: Response,
+      next: NextFunction
+    ): Promise<Response> => {
+      try {
+        const { email, password } = req.body;
 
-      const device = req.device;
+        const device = req.device;
 
-      const { refreshToken, accessToken, user } = await this.service.login(
-        email,
-        password,
-        device
-      );
+        const data = await this.service.login(
+          email,
+          password,
+          device,
+          resourceType
+        );
 
-      return res
-        .cookie("jwt", refreshToken, {
-          httpOnly: true,
-          // maxAge:
-        })
-        .status(200)
-        .json({
-          status: "success",
-          data: { refreshToken, accessToken, user },
-        });
-    } catch (err: any) {
-      next(err);
-    }
+        return res
+          .cookie("jwt", data.refreshToken, {
+            httpOnly: true,
+            // maxAge:
+          })
+          .status(200)
+          .json({
+            status: "success",
+            data,
+          });
+      } catch (err: any) {
+        next(err);
+      }
+    };
   };
 
-  verifyDevice = async (
-    req: IPRequest,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response> => {
-    try {
-      const { email, verificationCode } = req.body;
+  verifyDevice = (resourceType: "admin" | "user"): RequestHandler => {
+    return async (
+      req: IPRequest,
+      res: Response,
+      next: NextFunction
+    ): Promise<Response> => {
+      try {
+        const { email, verificationCode } = req.body;
 
-      const { user, refreshToken, accessToken } =
-        await this.service.verifyDevice(email, req.device, verificationCode);
+        const data = await this.service.verifyDevice(
+          email,
+          req.device,
+          verificationCode,
+          resourceType
+        );
 
-      return res
-        .cookie("jwt", refreshToken, {
-          httpOnly: true,
-          // maxAge:
-        })
-        .status(200)
-        .json({
-          status: "success",
-          data: { refreshToken, accessToken, user },
-        });
-    } catch (err: any) {
-      next(err);
-    }
+        return res
+          .cookie("jwt", data.refreshToken, {
+            httpOnly: true,
+            // maxAge:
+          })
+          .status(200)
+          .json({
+            status: "success",
+            data,
+          });
+      } catch (err: any) {
+        next(err);
+      }
+    };
   };
 
-  sendCode = async (
+  sendCode = (resourceType: "admin" | "user"): RequestHandler => {
+    return async (
       req: ProtectedRequest,
       res: Response,
       next: NextFunction
     ): Promise<Response> => {
       try {
         let value: string;
+        
+        const resource = resourceType === "user" ? req.user: req.admin;
 
         const channel = req.params.channel;
 
-        if (channel === "phone") value = req.user.phone;
-        else if (channel === "email") value = req.user.email;
-        else throw new BadRequestError(`Invalid channel type passed in request parameters!`)
+        if (channel === "phone") value = (resource as any).phone;
+        else if (channel === "email") value = (resource as any).email;
+        else
+          throw new BadRequestError(
+            `Invalid channel type passed in request parameters!`
+          );
 
-        await this.service.sendCode(channel as "phone" | "email", value);
+        await this.service.sendCode(
+          channel as "phone" | "email",
+          value,
+          resourceType
+        );
         return res.status(200).json({ status: "success" });
       } catch (err: any) {
         next(err);
       }
+    };
   };
 
   updatePhoneOrMail = (channel: "phone" | "email"): RequestHandler => {
@@ -157,23 +187,26 @@ class AuthController {
     };
   };
 
-  verifyPhoneOrMail = (
-    channel: "phone" | "email"
-  ): RequestHandler => {
+  verifyPhoneOrMail = (channel: "phone" | "email"): RequestHandler => {
     return async (
       req: ProtectedRequest,
       res: Response,
       next: NextFunction
     ): Promise<Response> => {
       try {
-        const {value, verificationCode} = req.body;
-        const updatedUser = await this.service.verifyPhoneOrMail(channel, verificationCode, value);
-        return res.status(200).json({status: "success", data: updatedUser});
+        const { value, verificationCode } = req.body;
+        const updatedUser = await this.service.verifyPhoneOrMail(
+          channel,
+          verificationCode,
+          value
+        );
+        return res.status(200).json({ status: "success", data: updatedUser });
       } catch (err: any) {
         next(err);
       }
     };
   };
+
 }
 
 export default AuthController;

@@ -20,4 +20,5 @@ export interface IUser {
     pendingPhone?: string;
     pendingEmail?: string;
     verificationExpiry?: Date;
+    lastSensitiveInfoUpdateTime?: Date;
 }

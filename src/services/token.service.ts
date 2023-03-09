@@ -1,4 +1,4 @@
-import { IToken } from "src/interfaces";
+import { IToken } from "../interfaces";
 import { TokenRepo } from "../repositories";
 
 export default class TokenService {

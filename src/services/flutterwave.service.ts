@@ -35,7 +35,7 @@ export const chargeCard = async (
       enckey: FLUTTERWAVE_ENCRYPTION_KEY,
     };
 
-    const res = await client.Charge.card(data, FLUTTERWAVE_ENCRYPTION_KEY);
+    const res = await client.Charge.card(data);
 
     console.log("INITIAL RESPONSE DATA", res);
 
@@ -148,17 +148,17 @@ export const getAllVirtualCards = async () => {
 };
 
 // getAllVirtualCards();
-createVirtualCard("USD", 10, "Panam", "Hebron", "2002/05/03", "panampraisehebron@gmail.com", "08056834458", "MR", "M");
-// chargeCard(
-//   100,
-//   "5258585922666506",
-//   "883",
-//   "09",
-//   "31",
-//   "panampraisehebron@gmail.com",
-//   "MC-3243g",
-//   "USD",
-//   "HEBRON PANAM PRAISE",
-//   3310
-// ).then((res)=>console.log("RESPONSE", res));
-// validateCharge("FLW-MOCK-a3f077ccd26e5970929feea5975441df", "12345");
+// createVirtualCard("USD", 10, "Panam", "Hebron", "2002/05/03", "panampraisehebron@gmail.com", "08056834458", "MR", "M")
+chargeCard(
+  100,
+  "5258585922666506",
+  "883",
+  "09",
+  "31",
+  "panampraisehebron@gmail.com",
+  "MC-3288943g",
+  "NGN",
+  "HEBRON PANAM PRAISE",
+  3310
+).then((res) => console.log("RESPONSE", res));
+// validateCharge("FLW-MOCK-31c94721ca4734aaef88a26982a7621d", "12345");
