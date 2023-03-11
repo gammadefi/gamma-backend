@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from "express"
 import { APP_WALLET_ADDRESS } from "../config";
 import { PromiseITF } from "../interfaces/wallet.interface";
 import { UserService } from "../services";
-import { createVirtualCard } from "src/services/flutterwave.service"
+import { createVirtualCard } from "../services/flutterwave.service"
 import { sendNativeCoin } from "../utils";
-import { creatVCardITf } from "src/interfaces/card.interface";
+import { creatVCardITf } from "../interfaces/card.interface";
 
 class cardController {
 

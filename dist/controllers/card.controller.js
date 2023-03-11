@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = require("../config");
 const services_1 = require("../services");
-const flutterwave_service_1 = require("src/services/flutterwave.service");
+const flutterwave_service_1 = require("../services/flutterwave.service");
 const utils_1 = require("../utils");
 class cardController {
     constructor() {
