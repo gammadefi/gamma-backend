@@ -2,7 +2,7 @@
   "name": "gamma-backend",
   "version": "0.0.1",
   "description": "Backend for the gamma project",
-  "main": "server.js",
+  "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "just": "tsc-watch --onSuccess \"ts-node ./src/server.ts\"",
