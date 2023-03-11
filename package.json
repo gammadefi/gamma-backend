@@ -3,11 +3,13 @@
   "version": "0.0.1",
   "description": "Backend for the gamma project",
   "main": "server.ts",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "just": "tsc-watch --onSuccess \"ts-node ./src/server.ts\"",
     "start": "nodemon src/server.ts"
   },
+  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gammadefi/gamma-backend.git"
