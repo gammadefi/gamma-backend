@@ -1,0 +1,1 @@
+{"version":3,"file":"settingsSchemas.js","sourceRoot":"","sources":["../../src/validations/settingsSchemas.ts"],"names":[],"mappings":";;;;;;AAAA,8CAAsB;AAET,QAAA,oBAAoB,GAAG,aAAG,CAAC,MAAM,CAAC;IAC7C,sBAAsB,EAAE,aAAG,CAAC,MAAM,EAAE,CAAC,QAAQ,EAAE;CAChD,CAAC,CAAC;AAEU,QAAA,oBAAoB,GAAG,aAAG,CAAC,MAAM,CAAC;IAC7C,sBAAsB,EAAE,aAAG,CAAC,MAAM,EAAE;CACrC,CAAC,CAAC"}

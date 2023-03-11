@@ -8,18 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const repositories_1 = require("../repositories");
 const exceptions_1 = require("../exceptions");
-const auth_service_1 = __importDefault(require("./auth.service"));
 class UserService {
     constructor() {
         this.repo = new repositories_1.UserRepo();
         this.pendingRepo = new repositories_1.PendingUserRepo();
-        this.auth = new auth_service_1.default();
     }
     getAllPendingUsers(skip, limit) {
         return __awaiter(this, void 0, void 0, function* () {

@@ -1,2 +1,3 @@
-import { initRegSchema, loginSchema, registerSchema, verifyDeviceSchema } from "./authSchemas";
-export { initRegSchema, loginSchema, registerSchema, verifyDeviceSchema };
+import { initRegSchema, loginSchema, registerSchema, verifyDeviceSchema, updateEmailorPhoneSchema, verifyPhoneOrMailSchema, registerAdminSchema } from "./authSchemas";
+import { createSettingsSchema, updateSettingsSchema } from './settingsSchemas';
+export { initRegSchema, loginSchema, registerSchema, verifyDeviceSchema, updateEmailorPhoneSchema, verifyPhoneOrMailSchema, createSettingsSchema, updateSettingsSchema, registerAdminSchema };

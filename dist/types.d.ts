@@ -1,8 +1,9 @@
 import { Request } from "express";
+import { IAdmin, IUser } from "./interfaces";
 export declare type Wallet = {
-    privateKey: string;
-    publicKey: string;
-    seedPhrase: string;
+    address: string;
+    key: string;
+    Mnemonic: string;
 };
 export declare type TokenData = {
     id: string;
@@ -13,6 +14,16 @@ export declare type Device = {
     ip: string;
     verified: boolean;
 };
+export declare type AdminAction = {
+    field: string;
+    previous: string | number;
+    updatedTo: string | number;
+    updateTime: Date | string;
+};
 export interface IPRequest extends Request {
     device: Device;
+}
+export interface ProtectedRequest extends IPRequest {
+    user?: IUser;
+    admin?: IAdmin;
 }

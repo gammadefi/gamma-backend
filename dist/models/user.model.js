@@ -15,8 +15,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const userSchema = new mongoose_1.Schema({
-    name: {
+    firstName: {
         type: String,
+        required: true,
+    },
+    lastName: {
+        type: String,
+        required: true,
+    },
+    dob: {
+        type: Date,
+        required: true,
+    },
+    phone: {
+        type: String,
+    },
+    title: {
+        type: String,
+        required: true,
+    },
+    gender: {
+        type: String,
+        enum: ["M", "F"],
         required: true,
     },
     email: {
@@ -31,7 +51,7 @@ const userSchema = new mongoose_1.Schema({
     walletAddress: {
         type: String,
         unique: true,
-        sparse: true
+        sparse: true,
     },
     assets: [
         {
@@ -45,12 +65,22 @@ const userSchema = new mongoose_1.Schema({
     ],
     verificationCode: String,
     refreshTokens: [String],
-    devices: [mongoose_1.Schema.Types.Mixed]
+    devices: [mongoose_1.Schema.Types.Mixed],
+    phoneVerified: {
+        type: Boolean,
+        default: false,
+    },
+    pendingPhone: String,
+    pendingEmail: String,
+    verificationExpiry: Date,
+    lastSensitiveInfoUpdateTime: Date,
 }, { timestamps: true });
 userSchema.pre('save', function (next) {
     return __awaiter(this, void 0, void 0, function* () {
-        const hash = yield bcrypt_1.default.hash(this.password, 10);
-        this.password = hash;
+        if (this.isModified('password')) {
+            const hash = yield bcrypt_1.default.hash(this.password, 10);
+            this.password = hash;
+        }
         next();
     });
 });

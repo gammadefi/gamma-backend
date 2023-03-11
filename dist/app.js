@@ -31,6 +31,7 @@ exports.default = (app) => __awaiter(void 0, void 0, void 0, function* () {
     app.use((0, compression_1.default)());
     app.use("/auth", routes_1.authRouter);
     app.use("/users", routes_1.userRouter);
+    app.use("/settings", routes_1.settingsRouter);
     app.all("*", function (req, res) {
         return res.sendStatus(404);
     });

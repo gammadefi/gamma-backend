@@ -1,3 +1,5 @@
 import UserService from "./user.service";
 import AuthService from "./auth.service";
-export { UserService, AuthService };
+import SettingsService from "./settings.service";
+import AdminService from "./admin.service";
+export { UserService, AuthService, SettingsService, AdminService };

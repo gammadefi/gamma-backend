@@ -35,9 +35,9 @@ class PendingUserRepo {
             yield models_1.PendingUserModel.deleteOne({ email });
         });
     }
-    create(email, verificationCode) {
+    create(email, verificationCode, verificationExpiry) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield models_1.PendingUserModel.create({ email, verificationCode });
+            return yield models_1.PendingUserModel.create({ email, verificationCode, verificationExpiry });
         });
     }
 }

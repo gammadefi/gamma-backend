@@ -39,8 +39,7 @@ class UserRepo {
     }
     update(id, fields) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield models_1.UserModel.findByIdAndUpdate(id, fields);
-            const user = yield this.getById(id);
+            const user = yield models_1.UserModel.findByIdAndUpdate(id, fields, { returnDocument: 'after' });
             return user;
         });
     }

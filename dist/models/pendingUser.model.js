@@ -14,7 +14,8 @@ const pendingUserSchema = new mongoose_1.Schema({
     verificationCode: {
         type: String,
         required: true
-    }
+    },
+    verificationExpiry: Date
 });
 const PendingUser = (0, mongoose_1.model)("Pending User", pendingUserSchema);
 exports.default = PendingUser;
