@@ -18,8 +18,8 @@ const userSchema = new Schema<IUser>(
     },
     phone: {
       type: String,
-      required: true,
-      unique: true
+      // required: true,
+      // unique: true
     },
     title: {
       type: String,
@@ -63,14 +63,17 @@ const userSchema = new Schema<IUser>(
     },
     pendingPhone: String,
     pendingEmail: String,
-    verificationExpiry: Date
+    verificationExpiry: Date,
+    lastSensitiveInfoUpdateTime: Date,
   },
   { timestamps: true }
 );
 
 userSchema.pre('save', async function(next) {
-  const hash = await bcrypt.hash(this.password, 10);
-  this.password = hash;
+  if (this.isModified('password')) {
+    const hash = await bcrypt.hash(this.password, 10);
+    this.password = hash;
+  }
   next();
 })
 

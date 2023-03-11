@@ -1,5 +1,10 @@
-import { UserRepo, PendingUserRepo } from "../repositories";
-import { IPendingUser, IUser } from "../interfaces";
+import {
+  UserRepo,
+  PendingUserRepo,
+  AdminRepo,
+  SettingsRepo,
+} from "../repositories";
+import { IAdmin, IPendingUser, IUser } from "../interfaces";
 import {
   ForbiddenError,
   NotFoundError,
@@ -19,30 +24,57 @@ import moment from "moment";
 class AuthService {
   repo: UserRepo;
   pendingRepo: PendingUserRepo;
+  adminRepo: AdminRepo;
+  settingsRepo: SettingsRepo;
 
   constructor() {
     this.repo = new UserRepo();
     this.pendingRepo = new PendingUserRepo();
+    this.adminRepo = new AdminRepo();
+    this.settingsRepo = new SettingsRepo();
   }
 
   // Helper method to strip user object of sensitive info
-  public stripUser(user: IUser): any {
-    const { password, refreshTokens, devices, ...restOfUser } = (user as any)
-      ._doc;
-    return restOfUser;
+  public stripUser(
+    resource: IUser | IAdmin,
+    resourceType: "user" | "admin"
+  ): any {
+    if (resourceType === "user") {
+      const { password, refreshTokens, devices, ...restOfUser } = (
+        resource as any
+      )._doc;
+      return restOfUser;
+    } else {
+      const { password, refreshTokens, ...restOfAdmin } = (resource as any)
+        ._doc;
+      return restOfAdmin;
+    }
+  }
+
+
+  public async getVerificationCodeExpiry(): Promise<number> {
+    const settings = await this.settingsRepo.get();
+    const verificationCodeExpiry = !settings
+      ? 10
+      : settings.verificationCodeExpiry;
+    return verificationCodeExpiry
   }
 
   // Helper method to check if expiry time of verification code has passed
   public checkExpiryTime(time: Date): void {
-    if (moment().isAfter(time)) throw new UnauthorizedError(`Verification code expired!`);
+    if (moment().isAfter(time))
+      throw new UnauthorizedError(`Verification code expired!`);
   }
 
   // Helper function to sign tokens
-  public signTokens(user: IUser): {
+  public signTokens(
+    resource: IUser | IAdmin,
+    resourceType: "user" | "admin"
+  ): {
     refreshToken: string;
     accessToken: string;
   } {
-    const dataToSign = { id: user._id, resourceType: "user" };
+    const dataToSign = { id: resource._id, resourceType };
 
     const accessToken = signJWT(
       dataToSign,
@@ -58,18 +90,31 @@ class AuthService {
     return { refreshToken, accessToken };
   }
 
+  // public async sendVerificationCode()
+
   public async login(
     email: string,
     password: string,
-    device: Device
-  ): Promise<{ user: any; accessToken: string; refreshToken: string }> {
-    const user: any = await this.repo.whereOne({ email });
+    device: Device,
+    resourceType: "admin" | "user"
+  ): Promise<{
+    user?: any;
+    admin?: any;
+    accessToken: string;
+    refreshToken: string;
+  }> {
+    let resource: any;
 
-    if (!user || !user.comparePassword(password))
-      throw new UnauthorizedError(`No user found with email or password!`);
+    if (resourceType === "user") resource = await this.repo.whereOne({ email });
+    else resource = await this.adminRepo.whereOne({ email });
+
+    if (!resource || !resource.comparePassword(password))
+      throw new UnauthorizedError(
+        `No ${resourceType} found with email or password!`
+      );
 
     // Getting user's devices
-    const devices = user.devices;
+    const devices = resource.devices;
 
     let deviceFound = false;
 
@@ -85,35 +130,91 @@ class AuthService {
 
     // Send verification code and throw error if device not found or verified
     if (!deviceFound) {
-      const verificationData = createVerificationCode(5, 10);
-      await this.repo.update(user._id, { verificationCode: verificationData.verificationCode, verificationExpiry: verificationData.expiryTimeInMinutes });
-      // Send email here telling user to authenticate new device
+      const verificationCodeExpiry = await this.getVerificationCodeExpiry();
+      const verificationData = createVerificationCode(
+        5,
+        verificationCodeExpiry
+      );
+      const dataToUpdate = {
+        verificationCode: verificationData.verificationCode,
+        verificationExpiry: verificationData.expiryTimeInMinutes,
+      };
+
+      if (resourceType === "user")
+        await this.repo.update(resource._id, dataToUpdate);
+      else await this.adminRepo.update(resource._id, dataToUpdate);
+      // Send email here telling user/admin to authenticate new device
 
       // Throw Error
       throw new UnauthorizedError(`Unauthenticated device`);
     }
 
-    const { refreshToken, accessToken } = this.signTokens(user);
+    const { refreshToken, accessToken } = this.signTokens(
+      resource,
+      resourceType
+    );
 
-    const refreshTokens = user.refreshTokens;
+    const refreshTokens = resource.refreshTokens;
     refreshTokens.push(refreshToken);
 
-    await user.save();
+    await resource.save();
 
-    const userToReturn = this.stripUser(user);
+    const resourceToReturn = this.stripUser(resource, resourceType);
+    const dataToReturn: {
+      user?: any;
+      admin?: any;
+      accessToken: string;
+      refreshToken: string;
+    } = { accessToken, refreshToken };
 
-    return { user: userToReturn, accessToken, refreshToken };
+    if (resourceType === "user") dataToReturn.user = resourceToReturn;
+    else dataToReturn.admin = resourceToReturn;
+
+    return dataToReturn;
+  }
+
+  public async signupAdmin(email: string, password: string): Promise<any> {
+    const admin = await this.adminRepo.whereOne({ email });
+
+    if (admin)
+      throw new ForbiddenError(
+        `An admin already exists with the email ${email}`
+      );
+
+    const newAdmin = await this.adminRepo.createUser({
+      email,
+      password,
+      refreshTokens: [],
+      actions: [],
+      active: true,
+      verificationCode: "",
+      devices: [],
+    } as IAdmin);
+
+    return this.stripUser(newAdmin, "admin");
   }
 
   public async initializeSignUp(email: string): Promise<string> {
     let pendingUser = await this.pendingRepo.getOne(email);
-    let verificationData = createVerificationCode(5, 10);
+    const verificationCodeExpiry = await this.getVerificationCodeExpiry();
+    let verificationData = createVerificationCode(
+      5,
+      verificationCodeExpiry
+    );
 
     if (!pendingUser)
-      pendingUser = await this.pendingRepo.create(email, verificationData.verificationCode, verificationData.expiryTimeInMinutes);
+      pendingUser = await this.pendingRepo.create(
+        email,
+        verificationData.verificationCode,
+        verificationData.expiryTimeInMinutes
+      );
     else if (pendingUser && pendingUser.verified === true)
       throw new ForbiddenError(`A user already exists with the email ${email}`);
-    else await this.pendingRepo.update(email, { verificationCode: verificationData.verificationCode, verificationExpiry: verificationData.expiryTimeInMinutes });
+    else
+      await this.pendingRepo.update(email, {
+        verificationCode: verificationData.verificationCode,
+        verificationExpiry: verificationData.expiryTimeInMinutes,
+      });
 
     // Send verification code to user's email
 
@@ -127,7 +228,7 @@ class AuthService {
     dob: Date,
     title: string,
     gender: string,
-    phone: string,
+    // phone: string,
     password: string,
     verificationCode: string,
     device: Device
@@ -163,42 +264,61 @@ class AuthService {
       dob,
       title,
       gender,
-      phone: "",
-      pendingPhone: phone,
+      // phone: "",
+      // pendingPhone: phone,
       password,
       verificationCode,
       refreshTokens: [],
       devices: [device],
       wallet: [genWallet],
       walletAddress: genWalletAddress,
-    });
+    } as any);
 
     // Send welcome mail
 
     await this.pendingRepo.update(email, { verified: true });
 
-    return this.stripUser(newUser);
+    return this.stripUser(newUser, "user");
   }
 
   public async sendCode(
     channel: "email" | "phone",
-    value: string
+    value: string,
+    resourceType: "admin" | "user"
   ): Promise<boolean> {
-    let user;
+    let resource;
 
-    if (channel === "email") user = await this.repo.whereOne({ email: value });
-    else user = await this.repo.whereOne({ phone: value });
+    if (resourceType === "admin")
+      resource = await this.adminRepo.whereOne({ email: value });
+    else {
+      if (channel === "email")
+        resource = await this.repo.whereOne({ email: value });
+      else resource = await this.repo.whereOne({ phone: value });
+    }
 
-    if (!user)
-      throw new NotFoundError("No user found with phone number or email!");
+    if (!resource)
+      throw new NotFoundError(
+        `No ${resourceType} found with phone number or email!`
+      );
 
-    const verificationData = createVerificationCode(5, 10);
+    const verificationCodeExpiry = await this.getVerificationCodeExpiry();
+    const verificationData = createVerificationCode(
+      5,
+      verificationCodeExpiry
+    );
 
     // Send email if verification channel is email
 
     // Send text message if verification channel is phone
 
-    await this.repo.update(user._id, { verificationCode: verificationData.verificationCode, verificationExpiry: verificationData.expiryTimeInMinutes });
+    const dataToUpdate = {
+      verificationCode: verificationData.verificationCode,
+      verificationExpiry: verificationData.expiryTimeInMinutes,
+    };
+
+    if (resourceType === "user")
+      await this.repo.update(resource._id, dataToUpdate);
+    else await this.adminRepo.update(resource._id, dataToUpdate);
 
     return true;
   }
@@ -210,8 +330,15 @@ class AuthService {
   ): Promise<boolean> {
     let existingUser: any;
     let pendingElUser: any;
-    const verificationData = createVerificationCode(5, 10);
-    let updateFields: any = { verificationCode: verificationData.verificationCode, verificationExpiry: verificationData.expiryTimeInMinutes };
+    const verificationCodeExpiry = await this.getVerificationCodeExpiry();
+    const verificationData = createVerificationCode(
+      5,
+      verificationCodeExpiry
+    );
+    let updateFields: any = {
+      verificationCode: verificationData.verificationCode,
+      verificationExpiry: verificationData.expiryTimeInMinutes,
+    };
     let pendingElUserUpdateFields: any = {};
 
     if (channel === "email") {
@@ -236,6 +363,8 @@ class AuthService {
 
     // Send verification code to user's number if channel is phone
 
+    // Change time of last sensitive data update to current time
+    updateFields.lastSensitiveInfoUpdateTime = new Date(Date.now());
     await this.repo.update(userId, updateFields);
 
     return true;
@@ -247,7 +376,7 @@ class AuthService {
     value: string
   ): Promise<IUser> {
     let filter: object;
-    let updateFields: object = { verificationCode: "" };
+    let updateFields: any = { verificationCode: "" };
 
     if (channel === "phone") {
       filter = { pendingPhone: value };
@@ -272,24 +401,36 @@ class AuthService {
 
     this.checkExpiryTime(user.verificationExpiry);
 
+    // Change time of last sensitive data update to current time
+    updateFields.lastSensitiveInfoUpdateTime = new Date(Date.now());
     const updatedUser = await this.repo.update(user._id, updateFields);
 
-    return this.stripUser(updatedUser);
+    return this.stripUser(updatedUser, "user");
   }
 
   public async verifyDevice(
     email: string,
     device: Device,
-    verificationCode: string
-  ): Promise<{ user: any; accessToken: string; refreshToken: string }> {
-    const user: any = await this.repo.whereOne({ email });
-    if (!user) throw new ForbiddenError(`No user found`);
+    verificationCode: string,
+    resourceType: "admin" | "user"
+  ): Promise<{
+    user?: any;
+    admin?: any;
+    accessToken: string;
+    refreshToken: string;
+  }> {
+    let resource;
 
-    if (verificationCode !== user.verificationCode)
+    if (resourceType === "user") resource = await this.repo.whereOne({ email });
+    else resource = await this.adminRepo.whereOne({ email });
+
+    if (!resource) throw new ForbiddenError(`No user found`);
+
+    if (verificationCode !== resource.verificationCode)
       throw new UnauthorizedError(`Invalid verification code!`);
 
     // Getting user device
-    const devices = user.devices;
+    const devices = resource.devices;
 
     // Getting all devices not equal to the current device
     const newDevices = devices.filter((el: Device) => el.ip !== device.ip);
@@ -299,19 +440,32 @@ class AuthService {
     newDevices.push(device);
 
     // Getting user's refresh tokens and adding newly created refresh token
-    const refreshTokens = user.refreshTokens;
-    const { refreshToken, accessToken } = this.signTokens(user);
+    const refreshTokens = resource.refreshTokens;
+    const { refreshToken, accessToken } = this.signTokens(
+      resource,
+      resourceType
+    );
     refreshTokens.push(refreshToken);
 
     // Saving user object
-    user.devices = newDevices;
-    user.refreshTokens = refreshTokens;
-    user.verificationCode = "";
-    user.save();
+    resource.devices = newDevices;
+    resource.refreshTokens = refreshTokens;
+    resource.verificationCode = "";
+    resource.save();
 
-    const userToReturn = this.stripUser(user);
+    const userToReturn = this.stripUser(resource, resourceType);
 
-    return { user: userToReturn, accessToken, refreshToken };
+    const dataToReturn: {
+      user?: any;
+      admin?: any;
+      accessToken: string;
+      refreshToken: string;
+    } = { accessToken, refreshToken };
+
+    if (resourceType === "user") dataToReturn.user = userToReturn;
+    else dataToReturn.admin = userToReturn;
+
+    return dataToReturn;
   }
 }
 
