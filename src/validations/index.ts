@@ -4,7 +4,13 @@ import {
   registerSchema,
   verifyDeviceSchema,
   updateEmailorPhoneSchema,
-  verifyPhoneOrMailSchema
+  verifyPhoneOrMailSchema,
+  registerAdminSchema
 } from "./authSchemas";
 
-export { initRegSchema, loginSchema, registerSchema, verifyDeviceSchema, updateEmailorPhoneSchema, verifyPhoneOrMailSchema };
+import {
+  createSettingsSchema,
+  updateSettingsSchema
+} from './settingsSchemas'
+
+export { initRegSchema, loginSchema, registerSchema, verifyDeviceSchema, updateEmailorPhoneSchema, verifyPhoneOrMailSchema, createSettingsSchema, updateSettingsSchema, registerAdminSchema };

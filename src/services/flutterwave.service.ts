@@ -36,7 +36,7 @@ export const chargeCard = async (
       enckey: FLUTTERWAVE_ENCRYPTION_KEY,
     };
 
-    const res = await client.Charge.card(data, FLUTTERWAVE_ENCRYPTION_KEY);
+    const res = await client.Charge.card(data);
 
     console.log("INITIAL RESPONSE DATA", res);
 
@@ -165,3 +165,4 @@ export const getAllVirtualCards = async () => {
 //   3310
 // ).then((res)=>console.log("RESPONSE", res));
 // validateCharge("FLW-MOCK-a3f077ccd26e5970929feea5975441df", "12345");
+

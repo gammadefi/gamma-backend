@@ -1,17 +1,14 @@
 import { UserRepo, PendingUserRepo } from "../repositories";
 import { NotFoundError } from "../exceptions";
 import { IUser, IPendingUser } from "../interfaces";
-import AuthService from "./auth.service";
 
 class UserService {
   repo: UserRepo;
   pendingRepo: PendingUserRepo;
-  auth: AuthService
 
   constructor() {
     this.repo = new UserRepo();
     this.pendingRepo = new PendingUserRepo();
-    this.auth = new AuthService();
   }
 
   public async getAllPendingUsers(skip: number, limit: number): Promise<IPendingUser[]> {
