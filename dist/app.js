@@ -32,6 +32,7 @@ exports.default = (app) => __awaiter(void 0, void 0, void 0, function* () {
     app.use("/auth", routes_1.authRouter);
     app.use("/users", routes_1.userRouter);
     app.use("/settings", routes_1.settingsRouter);
+    app.use("/wallet", routes_1.walletRouter);
     app.all("*", function (req, res) {
         return res.sendStatus(404);
     });

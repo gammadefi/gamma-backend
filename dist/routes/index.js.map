@@ -1,1 +1,1 @@
-{"version":3,"file":"index.js","sourceRoot":"","sources":["../../src/routes/index.ts"],"names":[],"mappings":";;;;;;AAAA,gEAAsC;AAI7B,qBAJF,qBAAU,CAIE;AAHnB,gEAAsC;AAGjB,qBAHd,qBAAU,CAGc;AAF/B,wEAA+C;AAEd,yBAF1B,yBAAc,CAE0B"}
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../src/routes/index.ts"],"names":[],"mappings":";;;;;;AAAA,gEAAsC;AAK7B,qBALF,qBAAU,CAKE;AAJnB,gEAAsC;AAIjB,qBAJd,qBAAU,CAIc;AAH/B,wEAA+C;AAGd,yBAH1B,yBAAc,CAG0B;AAF/C,oEAA0C;AAEO,uBAF1C,uBAAY,CAE0C"}

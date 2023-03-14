@@ -39,37 +39,29 @@ const signJWT = (data, secret, expiry) => {
 exports.signJWT = signJWT;
 const createVerificationCode = (n, expiryTimeInMinutes) => {
     let code = "";
-    const expiryTime = (0, moment_1.default)().add(expiryTimeInMinutes, 'minutes').toDate();
+    const expiryTime = (0, moment_1.default)().add(expiryTimeInMinutes, "minutes").toDate();
     for (let i = 0; i <= n; i++)
         code += crypto_1.default.randomInt(0, 9);
     return { verificationCode: code, expiryTimeInMinutes: expiryTime };
 };
 exports.createVerificationCode = createVerificationCode;
-const contractAbi = [
-    {
-        constant: true,
-        inputs: [{ name: "_owner", type: "address" }],
-        name: "balanceOf",
-        outputs: [{ name: "balance", type: "uint256" }],
-        type: "function",
-    },
-];
-const transferAsset = () => __awaiter(void 0, void 0, void 0, function* () {
-    web3.eth.accounts.wallet.add("84e4653e5b1147b57d6ff86a5d0d02f1b3efe629640e5d7c3502f32e63b7e35d");
-    const privateKey = "84e4653e5b1147b57d6ff86a5d0d02f1b3efe629640e5d7c3502f32e63b7e35d";
-    var tokenAddress = "0x0eba3661D65Ee65A695aF944875c900ea853411f";
-    var fromAddress = "0x4Ea1A7A0f05C66Bf7eaa2140445419b1FF775586";
-    let contract = new web3.eth.Contract(ABI_1.ABI, tokenAddress, { from: fromAddress });
-    let amount = web3.utils.toHex(10e18);
+const transferAsset = ({ privateKey, toAddress, fromAddress, amount, tokenAddress }) => __awaiter(void 0, void 0, void 0, function* () {
+    web3.eth.accounts.wallet.add(privateKey);
+    let contract = new web3.eth.Contract(ABI_1.ABI, tokenAddress, {
+        from: fromAddress,
+    });
+    let amountHex = web3.utils.toHex(amount * 1e18);
     const nonce = yield web3.eth.getTransactionCount(fromAddress, "latest");
     let rawTransaction = {
-        'from': fromAddress,
-        'gasPrice': web3.utils.toHex(20 * 1e9),
-        'gasLimit': web3.utils.toHex(210000),
-        'to': tokenAddress,
-        'value': 0x0,
-        'data': contract.methods.transfer('0x0D63663dEF0c2AbDb87a42C56D442f7A4bf419A8', amount).encodeABI(),
-        'nonce': nonce
+        from: fromAddress,
+        gasPrice: web3.utils.toHex(20 * 1e9),
+        gasLimit: web3.utils.toHex(210000),
+        to: tokenAddress,
+        value: 0x0,
+        data: contract.methods
+            .transfer(toAddress, amountHex)
+            .encodeABI(),
+        nonce: nonce,
     };
     const signedTx = yield web3.eth.accounts.signTransaction(rawTransaction, privateKey);
     web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (error, hash) {
@@ -77,14 +69,14 @@ const transferAsset = () => __awaiter(void 0, void 0, void 0, function* () {
             console.log("🎉 The hash of your transaction is: ", hash, "\n Check Alchemy's Mempool to view the status of your transaction!");
             return {
                 code: "success",
-                message: "transaction successfull"
+                message: "transaction successfull",
             };
         }
         else {
             console.log("❗Something went wrong while submitting your transaction:", error);
             return {
                 code: "failed",
-                message: "❗Something went wrong while submitting your transaction"
+                message: "❗Something went wrong while submitting your transaction",
             };
         }
     });
@@ -95,7 +87,7 @@ const tokenSwap = (privateKey, token, sellToken, buyToken, amount, myAddress) =>
     const params = {
         sellToken,
         buyToken,
-        sellAmount: String(amount * (10 ** token.decimal)),
+        sellAmount: String(amount * 10 ** token.decimal),
         takerAddress: myAddress,
     };
     const tokenName = new web3.eth.Contract(ABI_1.ABI, token.address);
@@ -110,7 +102,7 @@ const tokenSwap = (privateKey, token, sellToken, buyToken, amount, myAddress) =>
     console.log(res);
 });
 exports.tokenSwap = tokenSwap;
-const sendNativeCoin = ({ privateKey, toAddress, fromAddress, amount }) => __awaiter(void 0, void 0, void 0, function* () {
+const sendNativeCoin = ({ privateKey, toAddress, fromAddress, amount, }) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         var balance = yield web3.eth.getBalance(fromAddress);
         console.log(web3.utils.toDecimal(balance));
@@ -119,7 +111,6 @@ const sendNativeCoin = ({ privateKey, toAddress, fromAddress, amount }) => __awa
         console.log(error);
     }
     const nonce = yield web3.eth.getTransactionCount(fromAddress, "latest");
-    console.log(nonce);
     const transaction = {
         to: "0x4Ea1A7A0f05C66Bf7eaa2140445419b1FF775586",
         value: web3.utils.toWei(amount.toString(), "ether"),
@@ -133,13 +124,13 @@ const sendNativeCoin = ({ privateKey, toAddress, fromAddress, amount }) => __awa
             return {
                 status: "success",
                 message: "transaction successfull",
-                hash
+                hash,
             };
         }
         else {
             return {
                 status: "failed",
-                message: "❗Something went wrong while submitting your transaction"
+                message: "❗Something went wrong while submitting your transaction",
             };
         }
     });

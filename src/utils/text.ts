@@ -9,4 +9,4 @@ const data ={
 }
 
 // sendNativeCoin(data)
-transferAsset()
+// transferAsset()

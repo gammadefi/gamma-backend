@@ -12,27 +12,43 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const services_1 = require("../services");
 const utils_1 = require("../utils");
 utils_1.transferAsset;
-class walletCOntroller {
+class WalletController {
     constructor() {
-        this.sendMatic = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        this.sendAssets = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const user = req.user;
-            const { amount, to } = req.body;
-            try {
+            const { amount, to, tokenAddress } = req.body;
+            if (tokenAddress === "0x0000000000000000000000000000000000001010") {
+                try {
+                    const data = {
+                        privateKey: user.wallet[0].key,
+                        toAddress: to,
+                        fromAddress: user.wallet[0].address,
+                        amount,
+                    };
+                    const transfer = yield (0, utils_1.sendNativeCoin)(data);
+                    return res.status(200).json({ status: "success", data: transfer });
+                }
+                catch (error) {
+                    next(error);
+                }
+            }
+            else {
                 const data = {
                     privateKey: user.wallet[0].key,
                     toAddress: to,
                     fromAddress: user.wallet[0].address,
-                    amount
+                    amount,
+                    tokenAddress
                 };
-                const transfer = yield (0, utils_1.sendNativeCoin)(data);
-                return res.status(200).json({ status: "success", data: transfer });
-            }
-            catch (error) {
-                next(error);
+                try {
+                    const transfer = yield (0, utils_1.transferAsset)(data);
+                    return res.status(200).json({ status: "success", data: transfer });
+                }
+                catch (error) { }
             }
         });
         this.service = new services_1.UserService();
     }
 }
-exports.default = walletCOntroller;
+exports.default = WalletController;
 //# sourceMappingURL=wallet.controller.js.map

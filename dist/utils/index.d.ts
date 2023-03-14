@@ -6,9 +6,15 @@ export declare const createVerificationCode: (n: number, expiryTimeInMinutes: nu
     verificationCode: string;
     expiryTimeInMinutes: Date;
 };
-export declare const transferAsset: () => Promise<void>;
+export declare const transferAsset: ({ privateKey, toAddress, fromAddress, amount, tokenAddress }: {
+    privateKey: any;
+    toAddress: any;
+    fromAddress: any;
+    amount: any;
+    tokenAddress: any;
+}) => Promise<void>;
 export declare const tokenSwap: (privateKey: string, token: {
     address: string;
     decimal: number;
 }, sellToken: string, buyToken: string, amount: number, myAddress: string) => Promise<void>;
-export declare const sendNativeCoin: ({ privateKey, toAddress, fromAddress, amount }: TransferNativeITF) => Promise<void>;
+export declare const sendNativeCoin: ({ privateKey, toAddress, fromAddress, amount, }: TransferNativeITF) => Promise<void>;

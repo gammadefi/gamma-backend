@@ -162,7 +162,6 @@ class AuthService {
                 genWallet = resp.data.ETH[0];
                 genWalletAddress = resp.data.ETH[0].address;
             });
-            console.log(genWallet);
             const newUser = yield this.repo.createUser({
                 email,
                 firstName,
