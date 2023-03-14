@@ -4,7 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
-import { authRouter, userRouter, settingsRouter } from "./routes";
+import { authRouter, userRouter, settingsRouter, walletRouter } from "./routes";
 import { errHandler } from "./exceptions";
 
 
@@ -27,6 +27,7 @@ export default async (app: Application) => {
   app.use("/auth", authRouter);
   app.use("/users", userRouter);
   app.use("/settings", settingsRouter);
+  app.use("/wallet", walletRouter)
 
   // Catch and handle all 404 errors
   app.all("*", function (req: Request, res: Response): Response {

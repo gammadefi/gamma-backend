@@ -1,47 +1,55 @@
 import { NextFunction, Request, Response } from "express";
-import { UserService } from "../services"
+import { UserService } from "../services";
 import { transferAsset, sendNativeCoin } from "../utils";
-transferAsset
+transferAsset;
 
+class WalletController {
+  service: UserService;
 
-class walletCOntroller {
+  constructor() {
+    this.service = new UserService();
+  }
 
-    service:UserService;
-    
-    constructor() {
-        this.service = new UserService()
-    }
+  sendAssets = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const user: any = req.user;
+    const { amount, to, tokenAddress } = req.body;
+    if (tokenAddress === "0x0000000000000000000000000000000000001010") {
+      try {
+        //  const user = await this.service.getUserById(_id)
 
-    sendMatic =async (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ): Promise<Response> => {
+        const data = {
+          privateKey: user.wallet[0].key,
+          toAddress: to,
+          fromAddress: user.wallet[0].address,
+          amount,
+        };
 
-        const user : any = req.user;
-        const {amount,to} = req.body
+        const transfer = await sendNativeCoin(data);
 
-        try {
-         //  const user = await this.service.getUserById(_id)
-
-           const data = {
+        return res.status(200).json({ status: "success", data: transfer });
+      } catch (error) {
+        next(error);
+      }
+    } else {
+        const data = {
             privateKey: user.wallet[0].key,
             toAddress: to,
-            fromAddress:user.wallet[0].address,
-            amount
-           }
+            fromAddress: user.wallet[0].address,
+            amount,
+            tokenAddress
+          };
 
-           const transfer = await sendNativeCoin(data)
+      try {
+        const transfer = await transferAsset(data)
 
-           return res.status(200).json({status: "success", data:transfer })
-
-
-        } catch (error) {
-            next(error)
-        }
-        
-    } 
+        return res.status(200).json({status:"success", data: transfer})
+      } catch (error) {}
+    }
+  };
 }
 
-export default walletCOntroller
-
+export default WalletController;

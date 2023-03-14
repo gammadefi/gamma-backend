@@ -256,7 +256,7 @@ class AuthService {
       genWalletAddress = resp.data.ETH[0].address;
     });
 
-    console.log(genWallet);
+    // console.log(genWallet);
     const newUser = await this.repo.createUser({
       email,
       firstName,
