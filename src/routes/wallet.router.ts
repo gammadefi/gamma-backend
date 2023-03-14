@@ -8,6 +8,6 @@ const router = express.Router();
 
 
 
-router.post("transfer",walletController.sendAssets)
+router.post("/transfer",walletController.sendAssets)
 
 export default router;
