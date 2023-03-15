@@ -11,7 +11,9 @@ import { ZERO_EX_ADDRESS } from "../config";
 import moment from "moment";
 import { TransferNativeITF } from "../interfaces/wallet.interface";
 
+// const web3 = new Web3("https://polygon-rpc.com");
 const web3 = new Web3("https://endpoints.omniatech.io/v1/matic/mumbai/public");
+
 
 export const connectToDB = async (DB: string) => {
   mongoose
@@ -80,7 +82,8 @@ export const transferAsset = async ({
     privateKey
   );
 
- const resp =  web3.eth.sendSignedTransaction(
+
+ const resp = await web3.eth.sendSignedTransaction(
     signedTx.rawTransaction,
     function (error, hash) {
       if (error === null) {
@@ -91,16 +94,22 @@ export const transferAsset = async ({
         };
       } else {
        
+        // console.log("❗Something went wrong while submitting your transaction");
+        // console.log(error.message.replace("Returned error:",""));
+        
 
         return {
           code: "failed",
           message: "❗Something went wrong while submitting your transaction",
-          error
+          error:error.message.replace("Returned error:",""),
         };
       }
     }
   );
+
   return resp
+
+  
 };
 
 export const tokenSwap = async (
@@ -197,8 +206,7 @@ export const sendNativeCoin = async ({
         // );
 
         return {
-          status: "failed",
-          message: "❗Something went wrong while submitting your transaction",
+          message:error.message.replace("Returned error:","")
         };
       }
     }

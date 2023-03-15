@@ -51,10 +51,14 @@ class WalletController {
 
       try {
         const transfer = await transferAsset(data)
+        // console.log(transfer);
+        
 
         return res.status(200).json({status:"success", data: transfer})
       } catch (error) {
-        next(error);
+        // console.log(error);
+        
+        next({message:error.message.replace("Returned error:","").replace("INTERNAL_ERROR:","")});
       }
     }
   };
