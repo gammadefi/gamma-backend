@@ -70,7 +70,7 @@ export const transferAsset = async ({
     from: fromAddress,
     gasPrice: web3.utils.toHex(20 * 1e9),
     gasLimit: web3.utils.toHex(210000),
-    to: tokenAddress,
+    to: toAddress,
     value: 0x0,
     data: contract.methods.transfer(toAddress, amountHex).encodeABI(),
     nonce: nonce,
