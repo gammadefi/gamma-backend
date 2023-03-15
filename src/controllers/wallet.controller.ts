@@ -19,7 +19,10 @@ class WalletController {
     const { amount, to, tokenAddress } = req.body;
     if (tokenAddress === "0x0000000000000000000000000000000000001010") {
       try {
-        //  const user = await this.service.getUserById(_id)
+        //  const user = await this.service.getUserById(req.)
+
+        console.log(user.wallet[0]);
+        
 
         const data = {
           privateKey: user.wallet[0].key,
@@ -29,6 +32,9 @@ class WalletController {
         };
 
         const transfer = await sendNativeCoin(data);
+
+        // console.log(transfer);
+        
 
         return res.status(200).json({ status: "success", data: transfer });
       } catch (error) {
@@ -47,7 +53,9 @@ class WalletController {
         const transfer = await transferAsset(data)
 
         return res.status(200).json({status:"success", data: transfer})
-      } catch (error) {}
+      } catch (error) {
+        next(error);
+      }
     }
   };
 }

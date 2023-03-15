@@ -13,4 +13,6 @@ import {
   updateSettingsSchema
 } from './settingsSchemas'
 
-export { initRegSchema, loginSchema, registerSchema, verifyDeviceSchema, updateEmailorPhoneSchema, verifyPhoneOrMailSchema, createSettingsSchema, updateSettingsSchema, registerAdminSchema };
+import { transferSchema } from "./wallerSchemas";
+
+export { initRegSchema, loginSchema, registerSchema, verifyDeviceSchema, updateEmailorPhoneSchema, verifyPhoneOrMailSchema, createSettingsSchema, updateSettingsSchema, registerAdminSchema, transferSchema };
