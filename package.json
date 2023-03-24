@@ -9,7 +9,6 @@
     "start": "nodemon ./src/server.ts",
     "build": "tsc"
   },
-  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gammadefi/gamma-backend.git"
@@ -53,6 +52,7 @@
     "moment": "^2.29.4",
     "mongoose": "^6.6.5",
     "morgan": "^1.10.0",
+    "nodemailer": "^6.9.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",

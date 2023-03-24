@@ -20,6 +20,7 @@ import {
 import { Device } from "../types";
 import { createWallet } from "./api/createWallet";
 import moment from "moment";
+import { sendEmail } from "../utils/email";
 
 class AuthService {
   repo: UserRepo;
@@ -144,7 +145,68 @@ class AuthService {
         await this.repo.update(resource._id, dataToUpdate);
       else await this.adminRepo.update(resource._id, dataToUpdate);
       // Send email here telling user/admin to authenticate new device
+      try {
+        var today  = new Date();
+        const subject = "[Gammapay] Attemppted Login from Unknown device"
 
+        const body = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        
+        <head>
+          <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Unknown device </title>
+          <!--[if mso]><style type="text/css">body, table, td, a { font-family: Arial, Helvetica, sans-serif !important; }</style><![endif]-->
+        </head>
+        
+        <body style="font-family: Helvetica, Arial, sans-serif; margin: 0px; padding: 0px; background-color: #ffffff;">
+          <table role="presentation"
+            style="width: 100%; border-collapse: collapse; border: 0px none; border-spacing: 0px; font-family: Arial, Helvetica, sans-serif; background-color: rgb(239, 239, 239);">
+            <tbody>
+              <tr>
+                <td style="padding: 1rem 2rem; vertical-align: top; width: 100%;" align="center">
+                  <table role="presentation"
+                    style="max-width: 600px; border-collapse: collapse; border: 0px none; border-spacing: 0px; text-align: left;">
+                    <tbody>
+                      <tr>
+                        <td style="padding: 40px 0px 0px;">
+                          <div style="text-align: left;">
+                            <div style="padding-bottom: 20px;"><img src="https://i.ibb.co/sjKtPcQ/Gammapa.png" alt="Gammapay" style="width: 180px;">
+                            </div>
+                          </div>
+                          <div style="padding: 20px; background-color: rgb(255, 255, 255);">
+                            <div style="color: rgb(0, 0, 0); text-align: left;">
+                              <h1 style="margin: 1rem 0">Did You Login From a New Device or Location? </h1>
+                              <p style="padding-bottom: 16px">We noticed your Gammapay account ${email} was accessed from a new IP address.</p>
+                              <p><span style="font-weight: bold;">When:${today.toLocaleString()}</span></p>
+                              <p><span style="font-weight: bold;">Ip Address:${device.ip} </span></p>
+                              <p style="padding-bottom: 16px">Please use the verification code below to sign in.</p>
+                              <p style="padding-bottom: 16px"><strong style="font-size: 130%">${verificationData.verificationCode}</strong></p>
+                              <p style="padding-bottom: 16px"><a href="#" target="_blank"
+                                  style="padding: 12px 24px; border-radius: 4px; color: #FFF; background: #3F8EE9;display: inline-block;margin: 0.5rem 0;">Visit your account</a></p>
+                              <p style="padding-bottom: 16px">Don’t recognize this activity? Please  <a href="#"> reset your password </a>and contact <a> customer support </a> immediately.  </p>
+                              <p style="padding-bottom: 16px">Thanks,<br>The Gammapay team</p>
+                            </div>
+                          </div>
+                          <div style="padding-top: 20px; color: rgb(153, 153, 153); text-align: center;">
+                            <p style="padding-bottom: 16px">Made with ♥ in USA</p>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </body>
+        
+        </html>`
+
+        await sendEmail(email,body ,subject )
+      } catch (error) {
+        
+      }
       // Throw Error
       throw new UnauthorizedError(`Unauthenticated device`);
     }
@@ -217,6 +279,64 @@ class AuthService {
       });
 
     // Send verification code to user's email
+
+   try {
+    const body = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Verify your login</title>
+      <!--[if mso]><style type="text/css">body, table, td, a { font-family: Arial, Helvetica, sans-serif !important; }</style><![endif]-->
+    </head>
+    
+    <body style="font-family: Helvetica, Arial, sans-serif; margin: 0px; padding: 0px; background-color: #ffffff;">
+      <table role="presentation"
+        style="width: 100%; border-collapse: collapse; border: 0px none; border-spacing: 0px; font-family: Arial, Helvetica, sans-serif; background-color: rgb(239, 239, 239);">
+        <tbody>
+          <tr>
+            <td style="padding: 1rem 2rem; vertical-align: top; width: 100%;" align="center">
+              <table role="presentation"
+                style="max-width: 600px; border-collapse: collapse; border: 0px none; border-spacing: 0px; text-align: left;">
+                <tbody>
+                  <tr>
+                    <td style="padding: 40px 0px 0px;">
+                      <div style="text-align: left;">
+                        <div style="padding-bottom: 20px;"><img
+                            src="https://i.ibb.co/sjKtPcQ/Gammapa.png"
+                            alt="Gammapay" style="width: 180px;"></div>
+                      </div>
+                      <div style="padding: 20px; background-color: rgb(255, 255, 255);">
+                        <div style="color: rgb(0, 0, 0); text-align: left;">
+                          <h1 style="margin: 1rem 0">Verification code</h1>
+                          <p style="padding-bottom: 16px">Please use the verification code below to sign in.</p>
+                          <p style="padding-bottom: 16px"><strong style="font-size: 130%">${verificationData.verificationCode}</strong></p>
+                          <p style="padding-bottom: 16px">If you didn’t request this, you can ignore this email.</p>
+                          <p style="padding-bottom: 16px">Thanks,<br>The Gammapay team</p>
+                        </div>
+                      </div>
+                      <div style="padding-top: 20px; color: rgb(153, 153, 153); text-align: center;">
+                        <p style="padding-bottom: 16px">Made with ♥ in the USA</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </body>
+    
+    </html>`
+    const subject = `[Gammapay] Login Verification`
+    const res = await sendEmail(email, body, subject )
+    console.log(res);
+    
+   } catch (error) {
+    console.log(error)
+   }
 
     return verificationData.verificationCode;
   }

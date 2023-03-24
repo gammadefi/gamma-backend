@@ -22,7 +22,7 @@ class AuthController {
       
       return res
         .status(200)
-        .json({ status: "success", data: verificationCode });
+        .json({ status: "success", messsage:"verifation code sent" });
       } catch (err) {
         next(err);
       }
