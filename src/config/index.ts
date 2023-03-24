@@ -8,6 +8,8 @@ const ACCESS_TOKEN_EXPIRY: string = process.env.ACCESS_TOKEN_EXPIRY;
 const REFRESH_TOKEN_EXPIRY: string = process.env.REFRESH_TOKEN_EXPIRY;
 const ZERO_EX_ADDRESS: string = process.env.ZERO_EX_ADDRESS;
 const APP_WALLET_ADDRESS: string = process.env.APP_WALLET_ADDRESS;
+const EMAIL_ADDRESS: string = process.env.EMAIL_ADDRESS;
+const EMAIL_PASSWORD: string = process.env.EMAIL_PASSWORD
 let DB: string;
 let FLUTTERWAVE_SECRET_KEY: string;
 let FLUTTERWAVE_PUBLIC_KEY: string;
@@ -45,5 +47,7 @@ export {
   FLUTTERWAVE_SECRET_KEY,
   STRIPE_PUB_KEY,
   STRIPE_SECRET_KEY,
-  APP_WALLET_ADDRESS
+  APP_WALLET_ADDRESS,
+  EMAIL_ADDRESS,
+  EMAIL_PASSWORD
 };
